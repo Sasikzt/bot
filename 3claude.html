@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TapSwap Бот</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #2c2c2c;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #3c3c3c;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            width: 90%;
+            max-width: 500px;
+            height: 90%;
+            max-height: 700px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .balance {
+            font-size: 24px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .mini-coin {
+            width: 20px;
+            height: 20px;
+            background-color: gold;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .rank {
+            color: #cccccc;
+            margin-bottom: 20px;
+        }
+        .coin {
+            width: 180px;
+            height: 180px;
+            background-color: gold;
+            border-radius: 50%;
+            margin: auto;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 28px;
+            transition: transform 0.1s;
+            color: #3c3c3c;
+            font-weight: bold;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        .coin:active {
+            transform: scale(0.95);
+        }
+        .energy-container {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .energy-bar {
+            background-color: #444;
+            border-radius: 10px;
+            height: 20px;
+            margin-bottom: 5px;
+            overflow: hidden;
+            width: 100%;
+        }
+        .energy-fill {
+            background-color: yellow;
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s;
+        }
+        .energy-text {
+            font-size: 14px;
+        }
+        .energy-text:before {
+            content: '⚡ ';
+        }
+        .buttons {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+        }
+        .button {
+            padding: 10px;
+            background-color: #555;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 18%;
+            text-align: center;
+        }
+        .menu {
+            display: none;
+            background-color: #4c4c4c;
+            border-radius: 10px;
+            padding: 20px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            text-align: left;
+            width: 300px;
+        }
+        .menu div {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .menu button {
+            padding: 10px;
+            background-color: #555;
+            border-radius: 10px;
+            cursor: pointer;
+            width: auto;
+            height: auto;
+        }
+        .menu .close {
+            background-color: #FF5555;
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        .settings {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 24px;
+        }
+        .settings-menu {
+            display: none;
+            background-color: #4c4c4c;
+            border-radius: 10px;
+            padding: 20px;
+            position: absolute;
+            top: 50px;
+            right: 10px;
+            z-index: 1000;
+            text-align: left;
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="settings" onclick="toggleSettingsMenu()">⚙</div>
+        <div>
+            <div class="balance"><div class="mini-coin"></div><span data-translate="balance">0</span></div>
+            <div class="rank" data-translate="rank">🏆 Bronze</div>
+        </div>
+        <div class="coin" onclick="tapCoin()" onmousemove="tiltCoin(event)" onmouseleave="resetCoin()">SasX</div>
+        <div>
+            <div class="energy-container">
+                <div class="energy-bar">
+                    <div class="energy-fill"></div>
+                </div>
+                <div class="energy-text" data-translate="energy">3000/3000</div>
+            </div>
+            <div class="buttons">
+                <div class="button" onclick="showMenu('refMenu')" data-translate="ref">Ref</div>
+                <div class="button" onclick="showMenu('taskMenu')" data-translate="task">Task</div>
+                <div class="button" onclick="showMenu('tapMenu')" data-translate="tap">Tap</div>
+                <div class="button" onclick="showMenu('boostMenu')" data-translate="boost">Boost</div>
+                <div class="button" onclick="showMenu('statsMenu')" data-translate="stats">Stats</div>
+            </div>
+        </div>
+        <div class="menu" id="boostMenu">
+            <div class="close" onclick="closeMenu('boostMenu')">✖</div>
+            <div>
+                <span data-translate="boost-energy">Boost Energy by 500 for 1000 coins</span>
+                <button onclick="boostEnergy()" data-translate="buy">Buy</button>
+            </div>
+            <div>
+                <span data-translate="multitap">Multitap: +1 click for 1000 coins</span>
+                <button onclick="buyMultitap()" data-translate="buy">Buy</button>
+            </div>
+        </div>
+        <div class="menu" id="refMenu">
+            <div class="close" onclick="closeMenu('refMenu')">✖</div>
+            <div data-translate="ref-content">Referral content goes here</div>
+        </div>
+        <div class="menu" id="taskMenu">
+            <div class="close" onclick="closeMenu('taskMenu')">✖</div>
+            <div data-translate="task-content">Task content goes here</div>
+        </div>
+        <div class="menu" id="tapMenu">
+            <div class="close" onclick="closeMenu('tapMenu')">✖</div>
+            <div data-translate="tap-content">Tap content goes here</div>
+        </div>
+        <div class="menu" id="statsMenu">
+            <div class="close" onclick="closeMenu('statsMenu')">✖</div>
+            <div data-translate="stats-content">Stats content goes here</div>
+        </div>
+        <div class="settings-menu" id="settingsMenu">
+            <div>
+                <label for="language-select" data-translate="language">Language:</label>
+                <select id="language-select" onchange="changeLanguage()">
+                    <option value="en">English</option>
+                    <option value="uk">Українська</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <script>
+        let balance = 0;
+        let energy = 3000;
+        let maxEnergy = 3000;
+        let multitap = 1;
+        const balanceElement = document.querySelector('.balance span');
+        const energyFillElement = document.querySelector('.energy-fill');
+        const energyTextElement = document.querySelector('.energy-text');
+        const rankElement = document.querySelector('.rank');
+        const boostMenu = document.getElementById('boostMenu');
+        const refMenu = document.getElementById('refMenu');
+        const taskMenu = document.getElementById('taskMenu');
+        const tapMenu = document.getElementById('tapMenu');
+        const statsMenu = document.getElementById('statsMenu');
+        const settingsMenu = document.getElementById('settingsMenu');
+        const coin = document.querySelector('.coin');
+
+        const ranks = [
+            { name: "Bronze", color: "#CD7F32", threshold: 0 },
+            { name: "Silver", color: "#C0C0C0", threshold: 1500 },
+            { name: "Gold", color: "#FFD700", threshold: 10000 },
+            { name: "Platinum", color: "#E5E4E2", threshold: 50000 },
+            { name: "Diamond", color: "#B9F2FF", threshold: 100000 },
+            { name: "Master", color: "#FF4500", threshold: 250000 }
+        ];
+
+        const translations = {
+            en: {
+                balance: "0",
+                rank: "🏆 Bronze",
+                energy: "3000/3000",
+                ref: "Ref",
+                task: "Task",
+                tap: "Tap",
+                boost: "Boost",
+                stats: "Stats",
+                "boost-energy": "Boost Energy by 500 for 1000 coins",
+                multitap: "Multitap: +1 click for 1000 coins",
+                buy: "Buy",
+                language: "Language",
+                "ref-content": "Referral content goes here",
+                "task-content": "Task content goes here",
+                "tap-content": "Tap content goes here",
+                "stats-content": "Stats content goes here"
+            },
+            uk: {
+                balance: "0",
+                rank: "🏆 Бронза",
+                energy: "3000/3000",
+                ref: "Реф",
+                task: "Завдання",
+                tap: "Натискання",
+                boost: "Прискорення",
+                stats: "Статистика",
+                "boost-energy": "Збільшити енергію на 500 за 1000 монет",
+                multitap: "Мультинабір: +1 клік за 1000 монет",
+                buy: "Купити",
+                language: "Мова",
+                "ref-content": "Контент для рефералів тут",
+                "task-content": "Контент для завдань тут",
+                "tap-content": "Контент для натискань тут",
+                "stats-content": "Контент для статистики тут"
+            }
+        };
+
+        function updateRank() {
+            let currentRank = ranks[0];
+            for (let rank of ranks) {
+                if (balance >= rank.threshold) {
+                    currentRank = rank;
+                } else {
+                    break;
+                }
+            }
+            rankElement.textContent = `🏆 ${currentRank.name}`;
+            rankElement.style.color = currentRank.color;
+        }
+
+        function tapCoin() {
+            if (energy > 0) {
+                balance += multitap;
+                energy -= 1;
+                balanceElement.textContent = balance;
+                energyTextElement.textContent = `${energy}/${maxEnergy}`;
+                energyFillElement.style.width = `${(energy / maxEnergy) * 100}%`;
+                updateRank();
+            }
+        }
+
+        function tiltCoin(event) {
+            const rect = coin.getBoundingClientRect();
+            const x = event.clientX - rect.left - rect.width / 2;
+            const y = event.clientY - rect.top - rect.height / 2;
+            coin.style.transform = `rotateX(${-y / 10}deg) rotateY(${x / 10}deg)`;
+        }
+
+        function resetCoin() {
+            coin.style.transform = 'rotateX(0) rotateY(0)';
+        }
+
+        function showMenu(menuId) {
+            document.getElementById(menuId).style.display = 'block';
+        }
+
+        function closeMenu(menuId) {
+            document.getElementById(menuId).style.display = 'none';
+        }
+
+        function boostEnergy() {
+            if (balance >= 1000) {
+                balance -= 1000;
+                maxEnergy += 500;
+                energy += 500;
+                balanceElement.textContent = balance;
+                energyTextElement.textContent = `${energy}/${maxEnergy}`;
+                energyFillElement.style.width = `${(energy / maxEnergy) * 100}%`;
+                updateRank();
+                closeMenu('boostMenu');
+            } else {
+                alert('Not enough coins!');
+            }
+        }
+
+        function buyMultitap() {
+            if (balance >= 1000) {
+                balance -= 1000;
+                multitap += 1;
+                balanceElement.textContent = balance;
+                updateRank();
+                closeMenu('boostMenu');
+            } else {
+                alert('Not enough coins!');
+            }
+        }
+
+        function regenerateEnergy() {
+            if (energy < maxEnergy) {
+                energy = Math.min(maxEnergy, energy + 1);
+                energyTextElement.textContent = `${energy}/${maxEnergy}`;
+                energyFillElement.style.width = `${(energy / maxEnergy) * 100}%`;
+            }
+        }
+
+        function toggleSettingsMenu() {
+            settingsMenu.style.display = settingsMenu.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function changeLanguage() {
+            const language = document.getElementById('language-select').value;
+            const elements = document.querySelectorAll('[data-translate]');
+            elements.forEach(el => {
+                const key = el.getAttribute('data-translate');
+                el.textContent = translations[language][key];
+            });
+        }
+
+        setInterval(regenerateEnergy, 6000); // Regenerate energy every 6 seconds (30 minutes to full)
+
+        updateRank();
+    </script>
+</body>
+</html>
